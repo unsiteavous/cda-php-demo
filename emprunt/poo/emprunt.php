@@ -1,6 +1,5 @@
 <?php
 if (!isset($Emprunt) || !$Emprunt) {
-  echo "ici";
   include "entity/Emprunt.php";
   $Emprunt = new Emprunt();
 }
