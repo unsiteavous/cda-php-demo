@@ -1,3 +1,10 @@
+<?php
+if (!isset($Emprunt) || !$Emprunt) {
+  echo "ici";
+  include "entity/Emprunt.php";
+  $Emprunt = new Emprunt();
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -10,7 +17,7 @@
 <body>
   <form action="traitement" method="POST">
     <label for="montant">Montant de l'emprunt :
-      <input type="number" name="montant" id="montant" value="<?= $montant ?? '' ?>" required min="1">
+      <input type="number" name="montant" id="montant" value="<?= $Emprunt->getMontant() ?? '' ?>" required min="1">
     </label>
     <?php if (isset($Emprunt->getErrors()['montant'])) : ?>
       <div class="error">
@@ -19,26 +26,26 @@
     <?php endif ?>
 
     <label for="taux">Taux d'intérêt :
-      <input type="number" step="0.1" name="taux" id="taux" value="<?= $taux ?? '' ?>" required min="0" max="99">
+      <input type="number" step="0.1" name="taux" id="taux" value="<?= $Emprunt->getTaux() ?? '' ?>" required min="0" max="99">
     </label>
-    <?php if (isset($errors['taux'])) : ?>
+    <?php if (isset($Emprunt->getErrors()['taux'])) : ?>
       <div class="error">
-        <?= $errors['taux'] ?>
+        <?= $Emprunt->getErrors()['taux'] ?>
       </div>
     <?php endif ?>
 
     <label for="duree">Durée de l'emprunt :
-      <input type="number" name="duree" id="duree" value="<?= $duree ?? '' ?>" min="0" max="25" required >
+      <input type="number" name="duree" id="duree" value="<?= $Emprunt->getDuree() ?? '' ?>" min="0" max="25" required >
     </label>
-    <?php if (isset($errors['duree'])) : ?>
+    <?php if (isset($Emprunt->getErrors()['duree'])) : ?>
       <div class="error">
-        <?= $errors['duree'] ?>
+        <?= $Emprunt->getErrors()['duree'] ?>
       </div>
     <?php endif ?>
 
-    <?php if (!empty($errors['empty'])) { ?>
+    <?php if (!empty($Emprunt->getErrors()['empty'])) { ?>
       <div class="error">
-        <?= $errors['empty'] ?>
+        <?= $Emprunt->getErrors()['empty'] ?>
       </div>
     <?php } ?>
     <input type="submit" value="Calculer">

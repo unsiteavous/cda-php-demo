@@ -19,15 +19,14 @@ if (
   exit;
 }
 
-$emprunt = new Emprunt ($_POST);
-
-var_dump($emprunt);
 
 if (!empty($errors)) {
   require "emprunt.php";
   exit;
 }
 
+$Emprunt = new Emprunt($_POST);
+
 // Restitution :
 include "emprunt.php";
-// include "restitution.php";
+include "restitution.php";

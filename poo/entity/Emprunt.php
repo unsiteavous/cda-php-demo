@@ -1,103 +1,112 @@
 <?php
 
-final class Emprunt {
-  private int $montant;
-  private float $taux;
-  private int $duree;
+final class Emprunt
+{
+	private ?int $montant = null;
+	private ?float $taux = null;
+	private ?int $duree = null;
 
-  private int $nbMois;
-  private float $tauxPourcent;
-  private float $mensualites;
-  private float $montantTotal;
-  private float $coutEmprunt;
+	private int $nbMois;
+	private float $tauxPourcent;
+	private float $mensualites;
+	private float $montantTotal;
+	private float $coutEmprunt;
 
-  private array $errors = [];
+	private array $errors = [];
 
-  public function __construct(array $data = [])
-  {
-    $this->hydrate($data);
-  }
+	public function __construct(array $data = [])
+	{
+		$this->hydrate($data);
 
-  private function hydrate(array $data): void
-  {
-    foreach ($data as $key => $value) {
-      $method = 'set'.ucfirst($key);
-      if (method_exists($this, $method)) {
-        $this->$method(htmlentities($value));
-      }
-    }
-  }
+		if (!empty($data)) {
+			$this->setMensualites();
+			$this->setMontantTotal();
+			$this->setCoutEmprunt();
+		}
+	}
+
+	private function hydrate(array $data): void
+	{
+		foreach ($data as $key => $value) {
+			$method = 'set' . ucfirst($key);
+			if (method_exists($this, $method)) {
+				$this->$method(htmlentities($value));
+			}
+		}
+	}
 
 
 	/**
 	 * Get the value of montant
 	 *
-	 * @return  int
+	 * @return  ?int
 	 */
-	public function getMontant(): int
+	public function getMontant(): ?int
 	{
 		return $this->montant;
 	}
-  
+
 	/**
 	 * Set the value of montant
 	 *
 	 * @param   int  $montant  
 	 *
-   * @return void
+	 * @return void
 	 */
 	public function setMontant(int $montant): void
 	{
-    if ($montant < 1) {
-      $this->setError('montant', "Le montant ne peut pas être inférieur à zéro");
-      return;
-    }
+		if ($montant < 1) {
+			$this->setError('montant', "Le montant ne peut pas être inférieur à zéro");
+			return;
+		}
 
-    $this->montant = $montant;
+		$this->montant = $montant;
 	}
 
 	/**
 	 * Get the value of taux
 	 *
-	 * @return  float
+	 * @return  ?float
 	 */
-	public function getTaux(): float
+	public function getTaux(): ?float
 	{
 		return $this->taux;
 	}
-  
+
 	/**
 	 * Set the value of taux
 	 *
 	 * @param   float  $taux  
 	 *
-   * @return void
+	 * @return void
 	 */
 	public function setTaux(float $taux): void
 	{
 		$this->taux = $taux;
+		$this->setTauxPourcent($taux);
 	}
 
 	/**
 	 * Get the value of duree
 	 *
-	 * @return  int
+	 * @return  ?int
 	 */
-	public function getDuree(): int
+	public function getDuree(): ?int
 	{
 		return $this->duree;
 	}
-  
+
 	/**
 	 * Set the value of duree
 	 *
 	 * @param   int  $duree  
 	 *
-   * @return void
+	 * @return void
 	 */
 	public function setDuree(int $duree): void
 	{
 		$this->duree = $duree;
+		$this->setNbMois($duree);
 	}
 
 	/**
@@ -109,17 +118,17 @@ final class Emprunt {
 	{
 		return $this->nbMois;
 	}
-  
+
 	/**
 	 * Set the value of nbMois
 	 *
 	 * @param   int  $nbMois  
 	 *
-   * @return void
+	 * @return void
 	 */
-	public function setNbMois(int $nbMois): void
+	public function setNbMois(int $nbAnnees): void
 	{
-		$this->nbMois = $nbMois;
+		$this->nbMois = $nbAnnees * 12;
 	}
 
 	/**
@@ -131,17 +140,17 @@ final class Emprunt {
 	{
 		return $this->tauxPourcent;
 	}
-  
+
 	/**
 	 * Set the value of tauxPourcent
 	 *
 	 * @param   float  $tauxPourcent  
 	 *
-   * @return void
+	 * @return void
 	 */
-	public function setTauxPourcent(float $tauxPourcent): void
+	public function setTauxPourcent(float $taux): void
 	{
-		$this->tauxPourcent = $tauxPourcent;
+		$this->tauxPourcent = $taux / 100;
 	}
 
 	/**
@@ -153,17 +162,17 @@ final class Emprunt {
 	{
 		return $this->mensualites;
 	}
-  
+
 	/**
 	 * Set the value of mensualites
 	 *
 	 * @param   float  $mensualites  
 	 *
-   * @return void
+	 * @return void
 	 */
-	public function setMensualites(float $mensualites): void
+	public function setMensualites(): void
 	{
-		$this->mensualites = $mensualites;
+		$this->mensualites = round(($this->montant * ($this->tauxPourcent / 12)) / (1 - pow(1 + $this->tauxPourcent / 12, -$this->nbMois)), 2);
 	}
 
 	/**
@@ -175,17 +184,17 @@ final class Emprunt {
 	{
 		return $this->montantTotal;
 	}
-  
+
 	/**
 	 * Set the value of montantTotal
 	 *
 	 * @param   float  $montantTotal  
 	 *
-   * @return void
+	 * @return void
 	 */
-	public function setMontantTotal(float $montantTotal): void
+	public function setMontantTotal(): void
 	{
-		$this->montantTotal = $montantTotal;
+		$this->montantTotal = $this->mensualites * $this->nbMois;
 	}
 
 	/**
@@ -197,17 +206,17 @@ final class Emprunt {
 	{
 		return $this->coutEmprunt;
 	}
-  
+
 	/**
 	 * Set the value of coutEmprunt
 	 *
 	 * @param   float  $coutEmprunt  
 	 *
-   * @return void
+	 * @return void
 	 */
-	public function setCoutEmprunt(float $coutEmprunt): void
+	public function setCoutEmprunt(): void
 	{
-		$this->coutEmprunt = $coutEmprunt;
+		$this->coutEmprunt = round($this->montantTotal - $this->montant, 1);
 	}
 
 	/**
@@ -219,21 +228,21 @@ final class Emprunt {
 	{
 		return $this->errors;
 	}
-  
+
 	/**
 	 * Set the value of errors
 	 *
 	 * @param   array  $errors  
 	 *
-   * @return void
+	 * @return void
 	 */
 	public function setError(string $propriete, string $message): void
 	{
 		$this->errors[$propriete] = $message;
 	}
 
-  public function hasError(string $propriete): string|bool
-  {
-    return $this->errors[$propriete] ?? false;
-  }
+	public function hasError(string $propriete): string|bool
+	{
+		return $this->errors[$propriete] ?? false;
+	}
 }
